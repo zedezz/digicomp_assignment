@@ -84,7 +84,6 @@ void loginMenu() {
 void registerUser() {
     User newUser;
     cout << "Enter your name: ";
-    cin.ignore();
     getline(cin, newUser.name);
 
     newUser.phoneNum = getIntInput("Enter phone number: ", 1000, 999999999);
