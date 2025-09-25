@@ -32,6 +32,10 @@ void menuDisplay() {
     do {
         cout << "--------------------------------" << endl;
         cout << "           E-Wallet             " << endl;
+        cout << "User: " << currentUser.name << endl;
+        cout << "Balance: RM" << fixed << setprecision(2) 
+             << currentUser.balance << endl;
+        cout << "--------------------------------" << endl;
         cout << "1. Make Payment" << endl;
         cout << "2. View Balance" << endl;
         cout << "3. Transaction History" << endl;
@@ -45,16 +49,30 @@ void menuDisplay() {
                 makePayment();
                 break;
             case 2:
-                cout << "Balance: RM" << fixed << setprecision(2) 
+                cout << "Current Balance: RM" << fixed << setprecision(2) 
                      << currentUser.balance << endl;
                 break;
             case 3:
                 cout << "===== Transaction History =====" << endl;
-                for (const auto &t : currentUser.history) {
-                    cout << t.transactionId << " | " 
-                         << t.type << " | " 
-                         << t.store << " | RM" 
-                         << fixed << setprecision(2) << t.amount << endl;
+
+                if (currentUser.history.empty()) {
+                    cout << "No transactions available." << endl;
+                } else {
+                    // Table header
+                    cout << left << setw(10) << "ID"
+                         << setw(12) << "Type"
+                         << setw(20) << "Store"
+                         << right << setw(10) << "Amount" << endl;
+                    cout << string(52, '-') << endl;
+
+                    // Transactions
+                    for (const auto &t : currentUser.history) {
+                        cout << left << setw(10) << t.transactionId
+                             << setw(12) << t.type
+                             << setw(20) << t.store
+                             << right << setw(10) << fixed << setprecision(2) << t.amount
+                             << endl;
+                    }
                 }
                 break;
             case 4:
@@ -66,6 +84,8 @@ void menuDisplay() {
             default:
                 cout << "Invalid choice!" << endl;
         }
+
+        cout << endl; // spacing before redisplaying menu
     } while (choice != 0);
 }
 
