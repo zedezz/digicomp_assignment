@@ -19,28 +19,103 @@ struct User {
     vector<Transaction> history;
 };
 
-User currentUser = {"Faris", 200.0, 123456789, {}}; // sample user
+vector<User> users;        // all registered users
+User* currentUser = nullptr; // pointer to the active user
 int nextTransactionId = 1000;
 
 /// function prototypes ///
+void loginMenu();
+void registerUser();
+void loginUser();
+void logoutUser();
 void menuDisplay();
 void makePayment();
 void topUp();
+
+void loginMenu() {
+    int choice;
+    do {
+        cout << "========== E-Wallet ==========" << endl;
+        cout << "1. Register New User" << endl;
+        cout << "2. Login Existing User" << endl;
+        cout << "0. Exit" << endl;
+        cout << "Select: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1:
+                registerUser();
+                break;
+            case 2:
+                loginUser();
+                break;
+            case 0:
+                cout << "Exiting program..." << endl;
+                break;
+            default:
+                cout << "Invalid choice!" << endl;
+        }
+        cout << endl;
+    } while (choice != 0);
+}
+
+void registerUser() {
+    User newUser;
+    cout << "Enter your name: ";
+    cin.ignore();
+    getline(cin, newUser.name);
+
+    cout << "Enter phone number: ";
+    cin >> newUser.phoneNum;
+
+    cout << "Enter starting balance (RM): ";
+    cin >> newUser.balance;
+
+    users.push_back(newUser);
+    cout << "User registered successfully." << endl;
+}
+
+void loginUser() {
+    if (users.empty()) {
+        cout << "No users registered. Please register first." << endl;
+        return;
+    }
+
+    int phone;
+    cout << "Enter phone number to login: ";
+    cin >> phone;
+
+    for (auto &user : users) {
+        if (user.phoneNum == phone) {
+            currentUser = &user;
+            cout << "Welcome, " << currentUser->name << "!" << endl;
+            menuDisplay(); // go to wallet menu
+            return;
+        }
+    }
+    cout << "User not found. Please register first." << endl;
+}
+
+void logoutUser() {
+    cout << "Logging out " << currentUser->name << "..." << endl;
+    currentUser = nullptr;
+}
 
 void menuDisplay() {
     int choice;
     do {
         cout << "--------------------------------" << endl;
         cout << "           E-Wallet             " << endl;
-        cout << "User: " << currentUser.name << endl;
+        cout << "User: " << currentUser->name << endl;
         cout << "Balance: RM" << fixed << setprecision(2) 
-             << currentUser.balance << endl;
+             << currentUser->balance << endl;
         cout << "--------------------------------" << endl;
         cout << "1. Make Payment" << endl;
         cout << "2. View Balance" << endl;
         cout << "3. Transaction History" << endl;
         cout << "4. Top-Up Balance" << endl;
-        cout << "0. Exit" << endl;
+        cout << "5. Logout" << endl;
+        cout << "0. Exit Program" << endl;
         cout << "Select: ";
         cin >> choice;
 
@@ -50,12 +125,12 @@ void menuDisplay() {
                 break;
             case 2:
                 cout << "Current Balance: RM" << fixed << setprecision(2) 
-                     << currentUser.balance << endl;
+                     << currentUser->balance << endl;
                 break;
             case 3:
                 cout << "===== Transaction History =====" << endl;
 
-                if (currentUser.history.empty()) {
+                if (currentUser->history.empty()) {
                     cout << "No transactions available." << endl;
                 } else {
                     // Table header
@@ -66,7 +141,7 @@ void menuDisplay() {
                     cout << string(52, '-') << endl;
 
                     // Transactions
-                    for (const auto &t : currentUser.history) {
+                    for (const auto &t : currentUser->history) {
                         cout << left << setw(10) << t.transactionId
                              << setw(12) << t.type
                              << setw(20) << t.store
@@ -78,14 +153,17 @@ void menuDisplay() {
             case 4:
                 topUp();
                 break;
+            case 5:
+                logoutUser();
+                return; // back to login menu
             case 0:
-                cout << "Exiting..." << endl;
-                break;
+                cout << "Exiting program..." << endl;
+                exit(0);
             default:
                 cout << "Invalid choice!" << endl;
         }
 
-        cout << endl; // spacing before redisplaying menu
+        cout << endl;
     } while (choice != 0);
 }
 
@@ -123,17 +201,17 @@ void makePayment() {
     cout << "Enter amount to pay: RM";
     cin >> amount;
 
-    if (amount > currentUser.balance) {
+    if (amount > currentUser->balance) {
         cout << "Payment failed. Not enough balance." << endl;
         return;
     }
 
     // Deduct balance
-    currentUser.balance -= amount;
+    currentUser->balance -= amount;
 
     // Create transaction
     Transaction newTransaction = {"Payment", store, amount, "TXN" + to_string(nextTransactionId++)};
-    currentUser.history.push_back(newTransaction);
+    currentUser->history.push_back(newTransaction);
 
     cout << "Payment successful. Transaction ID: " << newTransaction.transactionId << endl;
 }
@@ -148,17 +226,17 @@ void topUp() {
         return;
     }
 
-    currentUser.balance += amount;
+    currentUser->balance += amount;
 
     // Create transaction record
     Transaction topUpTransaction = {"Top-Up", "E-Wallet", amount, "TXN" + to_string(nextTransactionId++)};
-    currentUser.history.push_back(topUpTransaction);
+    currentUser->history.push_back(topUpTransaction);
 
     cout << "Top-up successful. New balance: RM" 
-         << fixed << setprecision(2) << currentUser.balance << endl;
+         << fixed << setprecision(2) << currentUser->balance << endl;
 }
 
 int main() {
-    menuDisplay();
+    loginMenu();
     return 0;
 }
